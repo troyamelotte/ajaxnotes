@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="style.css">
+		<title>Notes!</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $('.edit').focusout(function(){
+            $.post('/edit', $(this).serialize(), function(res){
+              console.log(res)
+            },'json')
+          })
+        $('#addme').submit(function(){
+          $.post('/add', $(this).serialize(), function(res){
+            $('.input').prepend("<div> <form class='delete' action='/delete' method='post'>{%csrf_token%}<input type='hidden' name='id' value="+res.id+"><input type='submit' name='submit' value='Delete'></form><h4>"+res.title+"</h4><form class='edit' action='/edit' method='post'>{%csrf_token%}<textarea name='desc' rows='8' cols='40'></textarea><input type='hidden' name='noteid' value="+res.id+"></form></div>")
+            console.log(res)
+          })
+          return false;
+        })
+
+        $(document).on('submit', '.delete',function(){
+          $(this).parent().hide()
+          $.post('/delete', $(this).serialize(), function(res){
+
+          })
+          return false;
+        });
+      });
+    </script>
+    <style media="screen">
+
+    </style>
+	</head>
+	<body>
+		<!-- start post-it -->
+    {%for note in notes%}
+		<div class='postit'>
+        <form class='delete' action='/delete' method='post'>
+          {%csrf_token%}
+          <input type='hidden' name='id' value='{{note.id}}'>
+          <input type='submit' name='submit' value='Delete'>
+        </form>
+			<p class="text">
+        <h4>{{note.title}}</h4>
+        <form class='edit' action="/edit" method="post">
+          {%csrf_token%}
+          <textarea name="desc" rows="8" cols="40">{{note.desc}}</textarea>
+          <!-- <input type="hidden" name="noteid" value="{{note.id}}"> -->
+          <input type="hidden" name="noteid" value="{{note.id}}">
+        </form>
+
+			</p>
+		</div>
+    {%endfor%}
+		<!-- end post-it -->
+
+		<div class="input">
+			<form id='addme' action='/add' method="post">
+        {%csrf_token%}
+				<hr>
+				Insert Note Title Here: <input type="text" name="name" value="">
+
+				<input type="submit" value="Add Note">
+			</form>
+		</div>
+	</body>
+</html>
